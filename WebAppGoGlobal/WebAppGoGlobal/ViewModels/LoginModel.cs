@@ -3,10 +3,10 @@ namespace WebAppGoGlobal.ViewModels
 {
     public class LoginModel
     {
-        [Required(ErrorMessage = "Не указан Email")]
+        [Required(ErrorMessage = "No input Email")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Не указан пароль")]
+        [Required(ErrorMessage = "No input password")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
     }

@@ -82,7 +82,6 @@ namespace WebAppGoGlobal.Controllers
 
         private async Task Authenticate(string userName)
         {
-            // создаем один claim
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
