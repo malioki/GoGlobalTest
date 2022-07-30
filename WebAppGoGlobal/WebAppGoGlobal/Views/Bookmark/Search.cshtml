@@ -1,0 +1,164 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Search repositories";
+}
+
+
+<h1>@ViewData["Title"]</h1>
+
+<div class="row">
+    <div class="col-sm-10">
+        <input type="text" id="searchValue"  class="form-control text-decoration-underline" />
+    </div>
+    <div class="col-sm-2">
+        <input type="button" id="search" value="Search" class="form-control" />
+    </div>
+
+</div>
+
+<div class="results" id="results" style="border-left: solid;">
+
+</div>
+
+<div class="modal fade" id="EmailModal" tabindex="-1" aria-labelledby="EmailModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="EmailModalLabel">Send Email</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+         <label class="col-sm-2 col-form-label">Email</label>
+         <input type="email" id="email"  class="form-control text-decoration-underline" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="prepareEmail()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+    const search = document.getElementById("search");
+    const searchValue = document.getElementById("searchValue");
+    const resultResponse = document.getElementById("results");
+
+    search.addEventListener("click", searchRepositories);
+
+    searchValue.addEventListener("keydown", function(e) { 
+        if (e.keyCode == 13)
+            searchRepositories();
+    });
+
+    async function searchRepositories () {
+        if (searchValue.value.length == 0) {
+            resultResponse.innerHTML = "";
+            resultResponse.innerHTML += `<h1 style="margin: 20px;">Request cannot be empty, type new request</h1>`
+            return;
+        }
+        let requestUrl = 'https://api.github.com/search/repositories?q=';
+        requestUrl = requestUrl.concat(searchValue.value);
+        let response = await fetch(requestUrl, { 
+            method: 'GET',
+            headers: {
+                'Accept': 'application/vnd.github.mercy-preview+json'
+            },
+        }).then((res) => res.json());
+        let items  = response.items;
+        if (items.length > 0) {
+            resultResponse.innerHTML = "";
+            for (let item of items) {
+                resultResponse.innerHTML += `
+                <div id="${item.id}" class="item row" style="display: flex; margin: 20px; justify-content: space-between;"> 
+                    <div class="repository col-sm-10" style="display: flex; align-items: flex-start;">
+                        <div class="owner-avatar">
+                            <img name="Icon" src="${item.owner.avatar_url}" class="bookmark-img" style="max-width: 120px;"/>
+                        </div>
+                        <div class="repository-description" style="padding: 10px;">
+                            <h3 name="Title">${item.name}</h3>
+                            <p name="Description">${item.description}</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-2" style="align-self: center;">
+                        <button class="form-control" type="button" data-bs-toggle="modal" data-bs-target="#EmailModal" onclick="sendToBookmark('${item.id}', '${item.owner.avatar_url}', '${item.name}', '${item.description?.replace('\'', '')}')">Bookmark</button>
+                    </div>
+                 </div>
+            `;
+            }
+        }
+        else {
+            resultResponse.innerHTML = "";
+            resultResponse.innerHTML += `<h1 style="margin: 20px;">Request not give any results, please try again</h1>`
+        }
+        console.log(items);
+    }
+
+function sendToBookmark(id, icon, name, desc) {
+    const requestUrl = "/Bookmark/SetBookmark";
+    const dtoBookmark = {
+        Icon: icon,
+        Description: desc,
+        Title: name
+    };
+    fetch(requestUrl, { 
+            method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+            body: JSON.stringify(dtoBookmark)
+        }).
+        then((resp) => {
+            if (resp) {
+                const repository = document.getElementById(id);
+                const button = repository.getElementsByTagName('button')[0];
+                button.innerHTML = '&#9745';
+                button.disabled = 'disabled';
+            }
+        }).catch((r) => alert(r));
+}
+
+function prepareEmail() {
+    const emailElement = document.getElementById("email");
+    var maskOptions = {
+        mask: function(email) {
+            if (/^[A-Za-z0-9_\.-]+$/.test(emailElement.value))
+                return true;
+            if (/^[A-Za-z0-9_\.-]+@@$/.test(email))
+                return true;
+            if (/^[A-Za-z0-9_\.-]+@@[A-Za-z0-9-]+$/.test(emailElement.value))
+                return true;
+            if (/^[A-Za-z0-9_\.-]+@@[A-Za-z0-9-]+\.$/.test(emailElement.value))
+                return true;
+            if (/^[A-Za-z0-9_\.-]+@@[A-Za-z0-9-]+\.[A-Za-z]{1,6}$/.test(emailElement.value))
+                        return true;
+            if (/^[A-Za-z0-9_\.-]+@@[A-Za-z0-9-]+\.[A-Za-z]{1,6}\.$/.test(emailElement.value))
+                return true;
+            if (/^[A-Za-z0-9_\.-]+@@[A-Za-z0-9-]+\.[A-Za-z]{1,6}\.[A-Za-z]{1,3}$/.test(emailElement.value))
+                return true;
+            return false;
+        },
+        lazy: false
+    }
+    var mask = new IMask(emailElement, maskOptions);
+    mask.value = emailElement.value;
+    mask.on("complete", sendEmail(mask.value));
+}
+
+function sendEmail(email) {
+
+    const requestUrl = "/Utilities/SendEmail?email=" + email;
+    fetch(requestUrl, { 
+            method: 'GET',
+        }).
+        then((resp) => {
+            if (resp) {
+                alert("Email was sended");
+                document.getElementById("EmailModal").getElementsByTagName("button")[0].click();
+            }
+        }).catch((r) => alert(r));
+}
+
+</script>

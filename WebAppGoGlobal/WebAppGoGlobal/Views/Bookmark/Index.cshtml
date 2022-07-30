@@ -1,0 +1,55 @@
+﻿@model List<Repository>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Bookmarks";
+}
+
+<div class="text">
+    <div style="display: flex; justify-content: space-between">
+        <h1>My Bookmarks</h1>
+        <a class="btn btn-outline-dark" style="height: 40px;" href="/Utilities/ExportCsv">ExportCsv</a>
+    </div>
+    <div class="container">
+
+    @if (Model != null)
+        {
+            @for(int i = 0; i < (Model.Count / 3) + (1 * ((Model.Count % 3 ) / (Model.Count % 3 == 0 ? 1 : Model.Count % 3))); i++)
+            {
+                <div class="row">
+
+                @for(int j = 0; j < 3 && j + i*3 < Model.Count; j++)
+                {
+                    <div id="rep_@Model[i*3+j].Id" class="col m-1 bookmark-item"> 
+                        <a>
+                            <div class="bookmark-description">
+                                <h3>@Model[i*3+j].Title</h3>
+                                <img src="@Model[i*3+j].Icon" class="bookmark-img" />
+                                <p class="bookmark-item-description">@Model[i*3+j].Description</p>
+                            </div>
+                            <div class="bookmark-action d-md-flex justify-content-md-end">
+                                <button class="unbookmark" onclick="sendToUnBookmark(@Model[i*3+j].Id)">Unbookmark</button>
+                            </div>
+                        </a>
+                    </div>
+                }
+
+                </div>
+            }
+
+        }<script>
+
+        function sendToUnBookmark(id) {
+            const requestUrl = "/Bookmark/Unbookmark?id=" + id;
+            fetch(requestUrl, {
+                method: 'GET',
+            }).
+            then((resp) => {
+                if (resp) {
+                    const repository = document.getElementById(`rep_${id}`);
+                    repository.parentElement.removeChild(repository);
+                }
+            }).catch((r) => alert(r));
+        }
+</script>
+    </div>
+</div>
