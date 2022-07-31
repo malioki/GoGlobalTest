@@ -45,7 +45,7 @@
     const search = document.getElementById("search");
     const searchValue = document.getElementById("searchValue");
     const resultResponse = document.getElementById("results");
-
+    let repos_url = "";
     search.addEventListener("click", searchRepositories);
 
     searchValue.addEventListener("keydown", function(e) { 
@@ -73,7 +73,8 @@
             for (let item of items) {
                 resultResponse.innerHTML += `
                 <div id="${item.id}" class="item row" style="display: flex; margin: 20px; justify-content: space-between;"> 
-                    <div class="repository col-sm-10" style="display: flex; align-items: flex-start;">
+                <input type="hidden" value="${item.html_url}" class="repos_url" />    
+                <div class="repository col-sm-10" style="display: flex; align-items: flex-start;">
                         <div class="owner-avatar">
                             <img name="Icon" src="${item.owner.avatar_url}" class="bookmark-img" style="max-width: 120px;"/>
                         </div>
@@ -98,6 +99,8 @@
 
 function sendToBookmark(id, icon, name, desc) {
     const requestUrl = "/Bookmark/SetBookmark";
+    const repository = document.getElementById(id);
+    repos_url = repository.getElementsByClassName("repos_url")[0].value;
     const dtoBookmark = {
         Icon: icon,
         Description: desc,
@@ -112,7 +115,6 @@ function sendToBookmark(id, icon, name, desc) {
         }).
         then((resp) => {
             if (resp) {
-                const repository = document.getElementById(id);
                 const button = repository.getElementsByTagName('button')[0];
                 button.innerHTML = '&#9745';
                 button.disabled = 'disabled';
@@ -149,7 +151,7 @@ function prepareEmail() {
 
 function sendEmail(email) {
 
-    const requestUrl = "/Utilities/SendEmail?email=" + email;
+    const requestUrl = `/Utilities/SendEmail?email=${email}&url=${repos_url}`;
     fetch(requestUrl, { 
             method: 'GET',
         }).

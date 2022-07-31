@@ -28,7 +28,7 @@ namespace WebAppGoGlobal.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> SendEmail(string email)
+        public async Task<IActionResult> SendEmail(string email, string url)
         {
             try
             {
@@ -36,8 +36,9 @@ namespace WebAppGoGlobal.Controllers
                 {
                     message.To.Add(email);
                     message.From = new MailAddress("malioki008@gmail.com");
-                    message.Subject = "subject";
-                    message.Body = "<h1>Hello emails!</h1>";
+                    message.Subject = "Url repository";
+                    message.Body = "<h1>Url link repository from github!</h1>" +
+                        $@"<p>{url}</p>";
                     message.IsBodyHtml = true;
 
                     using (var smtpClient = new SmtpClient("smtp.gmail.com", 587))
