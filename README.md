@@ -10,3 +10,5 @@ Choose SQL Server 2019 Developer edition.
 To run application, just start WebAppGoGlobal solution in folder via VS Studio or Rider.
 
 File named WebAppGoGlobal.sln.
+
+If site don't redirect you automaticaly, go to {site_url}/Account/Login to see Welcome Page.
